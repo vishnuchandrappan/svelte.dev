@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { Icon } from '@sveltejs/site-kit/components';
 
 	interface Props {
@@ -14,7 +15,23 @@
 	}
 
 	let { repo, prev, next }: Props = $props();
+	let debounceTimeout: NodeJS.Timeout;
+	const DEBOUNCE_DELAY = 100;
+
+	const handleKeydown = async (event: KeyboardEvent) => {
+		if (debounceTimeout) clearTimeout(debounceTimeout);
+
+		debounceTimeout = setTimeout(async () => {
+			if (event.key === 'ArrowRight' && next) {
+				await goto(next.path);
+			} else if (event.key === 'ArrowLeft' && prev) {
+				await goto(prev.path);
+			}
+		}, DEBOUNCE_DELAY);
+	};
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <p class="edit">
 	<a href={repo}>
